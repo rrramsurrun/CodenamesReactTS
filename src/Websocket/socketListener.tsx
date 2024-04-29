@@ -7,7 +7,6 @@ import {
   ResetGameData,
   UpdateGameData,
 } from './messageTypes';
-import { GameStatus } from '../Classes/game';
 
 export function AddSocketListeners(
   socket: SocketSender,
@@ -30,15 +29,15 @@ export function AddSocketListeners(
       console.log('Incoming websocket message was not in the correct format');
       return;
     }
+    console.log(response);
     const responseBody = response.body;
-    console.log(responseBody);
     switch (response.responseType) {
       case 'updateGame':
         const dataUpdate = responseBody as UpdateGameData;
         setGame({ type: 'UPDATE_GAME', payload: dataUpdate });
         break;
       case 'joinGame':
-        socket.userId = responseBody.UserId;
+        socket.userId = responseBody.userId;
         const dataJoin = responseBody as JoinGameData;
         setGame({ type: 'JOIN_GAME', payload: dataJoin });
         break;
@@ -56,11 +55,9 @@ export function AddSocketListeners(
         //TODO A function to clear the url
         //window.location.href = '/';
         break;
-      case 'errormsg':
-        if (responseBody.startsWith('Could not find')) {
-          localStorage.removeItem('codenamesUserId');
-          localStorage.removeItem('codenamesGameId');
-        }
+      case 'FindGameError':
+        localStorage.removeItem('codenamesUserId');
+        localStorage.removeItem('codenamesGameId');
         console.log(responseBody);
         break;
       default:

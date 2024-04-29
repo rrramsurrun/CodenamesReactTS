@@ -7,13 +7,15 @@ import {
 import Clue from './clue';
 
 export enum GameStatus {
+  'FRONTPAGE_START',
   'FRONTPAGE_NEW',
+  'FRONTPAGE_FIND',
   'FRONTPAGE_SELECT',
   'CODENAMES',
 }
 
 export default class Game {
-  gameStatus: GameStatus = GameStatus.FRONTPAGE_NEW;
+  gameStatus: GameStatus = GameStatus.FRONTPAGE_START;
   errorMessage = '';
   //Data received in first message
   joinData = false;
@@ -33,7 +35,9 @@ export default class Game {
   win: string = '';
   revealed: string[] = [];
 
-  joinGame = (data: JoinGameData) => {
+  constructor() {}
+
+  joinGame(data: JoinGameData) {
     this.gameId = data.gameId;
     this.playerCount = data.playerCount;
     this.userId = data.userId;
@@ -43,8 +47,8 @@ export default class Game {
     this.codex = data.codex;
     this.joinData = true;
     this.updateGameStatus();
-  };
-  updateGame = (data: UpdateGameData) => {
+  }
+  updateGame(data: UpdateGameData) {
     this.nicknames = data.nicknames;
     this.resetGameSurvey = data.resetGameSurvey;
     this.clues = data.clues;
@@ -53,25 +57,26 @@ export default class Game {
     this.revealed = data.revealed;
     this.updateData = true;
     this.updateGameStatus();
-  };
-  findGame = (data: FindGameData) => {
+  }
+
+  findGame(data: FindGameData) {
     this.gameId = data.gameId;
     this.playerCount = data.playerCount;
     this.nicknames = data.nicknames;
     this.gameStatus = GameStatus.FRONTPAGE_SELECT;
-  };
-  resetGame = (data: ResetGameData) => {
+  }
+  resetGame(data: ResetGameData) {
     this.words = data.words;
     this.firstTurn = data.firstTurn;
     this.codex = data.codex;
-  };
+  }
 
-  updateGameStatus = () => {
+  updateGameStatus() {
     if (this.joinData && this.updateData) {
       this.gameStatus = GameStatus.CODENAMES;
     }
-  };
-  setErrorMessage = (s: string) => {
+  }
+  setErrorMessage(s: string) {
     this.errorMessage = s;
-  };
+  }
 }

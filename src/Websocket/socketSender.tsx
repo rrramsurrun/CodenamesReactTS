@@ -20,13 +20,33 @@ type decorativeEmitArgs =
 
 export default class SocketSender extends WebSocket {
   userId: string;
+  stack: string[] = [];
 
   constructor(url: string) {
     super(url);
     this.userId = '';
+    const socket = this;
+    this.onopen = () => {
+      socket.pollForOutgoingMessages();
+    };
   }
 
-  decorativeEmit = (requestType: string, args: decorativeEmitArgs) => {
+  pollForOutgoingMessages() {
+    //Work through stack and send all queued messages.
+    while (this.readyState === 1 && this.stack.length > 0) {
+      let error = false;
+      try {
+        this.send(this.stack[0]);
+      } catch {
+        error = true;
+      }
+      if (!error) {
+        this.stack.shift();
+      }
+    }
+  }
+
+  decorativeEmit(requestType: string, args: decorativeEmitArgs) {
     //Convert any non-strings to strings
     Object.keys(args).forEach((key) => {
       // @ts-ignore
@@ -37,64 +57,69 @@ export default class SocketSender extends WebSocket {
     });
     console.log(`Sending message`);
     console.log(JSON.stringify({ RequestType: requestType, Body: args }));
-    this.send(JSON.stringify({ RequestType: requestType, Body: args }));
-  };
+    const stackMsg = JSON.stringify({ RequestType: requestType, Body: args });
+    //Add to stack if it isn't the same as the first message
+    if (this.stack[this.stack.length - 1] !== stackMsg) {
+      this.stack.push(stackMsg);
+      this.pollForOutgoingMessages();
+    }
+  }
 
-  newGame = (role: string, nickname: string, playercount: number) => {
+  newGame(role: string, nickname: string, playercount: number) {
     this.decorativeEmit('newGame', {
       role: role,
       nickname: nickname,
       playercount: playercount,
     });
-  };
+  }
 
-  findGame = (gameId: string) => {
+  findGame(gameId: string) {
     this.decorativeEmit('findGame', { gameId: gameId });
-  };
-  joinGame = (gameId: string, role: string, nickname: string) => {
+  }
+  joinGame(gameId: string, role: string, nickname: string) {
     this.decorativeEmit('joinGame', {
       gameId: gameId,
       role: role,
       nickname: nickname,
     });
-  };
-  rejoinGame = (userId: string, gameId: string) => {
+  }
+  rejoinGame(userId: string, gameId: string) {
     this.decorativeEmit('rejoinGame', { userId: userId, gameId: gameId });
-  };
+  }
 
-  leaveGame = () => {
+  leaveGame() {
     this.decorativeEmit('leaveGame', { userId: this.userId });
-  };
+  }
 
-  resetGame = () => {
+  resetGame() {
     this.decorativeEmit('resetGame', { userId: this.userId });
-  };
+  }
 
-  resetConfirm = (reset: boolean) => {
+  resetConfirm(reset: boolean) {
     if (reset) {
       this.decorativeEmit('resetGameConfirm', { userId: this.userId });
     } else {
       this.decorativeEmit('resetGameReject', { userId: this.userId });
     }
-  };
-  requestNewWords = () => {
+  }
+  requestNewWords() {
     this.decorativeEmit('requestNewWords', { userId: this.userId });
-  };
+  }
 
-  sendClue = (clue: string, clueCount: number) => {
+  sendClue(clue: string, clueCount: number) {
     this.decorativeEmit('sendClue', {
       userId: this.userId,
       clue: clue,
       clueCount: clueCount,
     });
-  };
-  clickWord = (wordIndex: number) => {
+  }
+  clickWord(wordIndex: number) {
     this.decorativeEmit('clickWord', {
       userId: this.userId,
       wordIndex: wordIndex,
     });
-  };
-  endTurn = () => {
+  }
+  endTurn() {
     this.decorativeEmit('endTurn', { userId: this.userId });
-  };
+  }
 }

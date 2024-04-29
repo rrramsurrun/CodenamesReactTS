@@ -1,4 +1,5 @@
-import Game from '../Classes/game';
+import _ from 'lodash';
+import Game, { GameStatus } from '../Classes/game';
 import {
   JoinGameData,
   UpdateGameData,
@@ -34,6 +35,10 @@ type LeaveGameAction = {
   type: 'LEAVE_GAME';
   payload: LeaveGameData;
 };
+type ChangeStatusAction = {
+  type: 'CHANGE_STATUS';
+  payload: GameStatus;
+};
 
 export type GameReducerAction =
   | UpdateGameAction
@@ -41,7 +46,8 @@ export type GameReducerAction =
   | FindGameAction
   | ResetGameAction
   | LeaveGameAction
-  | CancelJoinGameAction;
+  | CancelJoinGameAction
+  | ChangeStatusAction;
 
 export default function gameReducer(
   state: Game,
@@ -49,27 +55,28 @@ export default function gameReducer(
 ): Game {
   if (action.type == 'UPDATE_GAME') {
     state.updateGame(action.payload);
-    return state;
+    return _.cloneDeep(state);
   }
   if (action.type == 'JOIN_GAME') {
     const payload = action.payload;
     localStorage.setItem('codenamesUserId', String(payload.userId));
     localStorage.setItem('codenamesGameId', payload.gameId);
     state.joinGame(payload);
-    return state;
+    return _.cloneDeep(state);
   }
   if (action.type == 'FIND_GAME') {
     state.findGame(action.payload);
-    return state;
+    return _.cloneDeep(state);
   }
   if (action.type == 'RESET_GAME') {
     state.resetGame(action.payload);
-    return state;
+    return _.cloneDeep(state);
   }
   if (action.type == 'LEAVE_GAME') {
     if (action.payload.userId === state.userId) {
       localStorage.removeItem('codenamesUserId');
       localStorage.removeItem('codenamesGameId');
+      window.location.href = '/';
       return new Game();
     }
     state.setErrorMessage(
@@ -78,7 +85,13 @@ export default function gameReducer(
     return state;
   }
   if (action.type === 'CANCELJOIN_GAME') {
+    //Cancel an attempted game join
     return new Game();
+  }
+  if (action.type === 'CHANGE_STATUS') {
+    //Toggle front page between 'Create' and 'Find' game
+    state.gameStatus = action.payload;
+    return _.cloneDeep(state);
   }
   return state;
 }

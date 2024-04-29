@@ -1,22 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import SocketSender from '../Websocket/socketSender';
-import Game, { GameStatus } from '../Classes/game';
-import { GameReducerAction } from '../Websocket/gameReducer';
-// import ReactDOM from "react-dom";
+import { useState, useEffect } from 'react';
+import { GameStatus } from '../Classes/game';
+import { useGameContext } from '../contextProvider';
 
-type FrontPageProps = {
-  mysocket: SocketSender;
-  game: Game;
-  errormsg: string;
-  setGame: React.Dispatch<GameReducerAction>;
-};
-
-export default function FrontPage({
-  mysocket,
-  game,
-  errormsg,
-  setGame,
-}: FrontPageProps) {
+export default function FrontPage() {
+  const { game, setGame, mysocket } = useGameContext();
   const [status, setStatus] = useState(game.gameStatus);
   const [room, setroom] = useState('');
   const [tempnickname, settempnickname] = useState('');
@@ -27,22 +14,24 @@ export default function FrontPage({
   }, [game]);
 
   const submitRequest = () => {
-    switch (status) {
-      case GameStatus.FRONTPAGE_NEW:
-        mysocket.newGame(temprole, tempnickname, playercount);
-        break;
-      case GameStatus.FRONTPAGE_FIND:
-        const cleanedRoom = room.includes('roomname=')
-          ? room.slice(room.indexOf('roomname=') + 9)
-          : room;
-        setroom(cleanedRoom);
-        mysocket.findGame(cleanedRoom);
-        break;
-      case GameStatus.FRONTPAGE_SELECT:
-        mysocket.joinGame(game.gameId, temprole, tempnickname);
-        break;
-      default:
-        console.log('Game Status error');
+    if (mysocket !== undefined) {
+      switch (status) {
+        case GameStatus.FRONTPAGE_NEW:
+          mysocket.newGame(temprole, tempnickname, playercount);
+          break;
+        case GameStatus.FRONTPAGE_FIND:
+          const cleanedRoom = room.includes('roomname=')
+            ? room.slice(room.indexOf('roomname=') + 9)
+            : room;
+          setroom(cleanedRoom);
+          mysocket.findGame(cleanedRoom);
+          break;
+        case GameStatus.FRONTPAGE_SELECT:
+          mysocket.joinGame(game.gameId, temprole, tempnickname);
+          break;
+        default:
+          console.log('Game Status error');
+      }
     }
   };
 
@@ -152,7 +141,7 @@ export default function FrontPage({
           >
             Cancel join
           </button>
-          {errormsg ? <div>{errormsg}</div> : ''}
+          {game.errorMessage ? <div>{game.errorMessage}</div> : ''}
         </div>
       </div>
     );
@@ -198,7 +187,7 @@ export default function FrontPage({
             {`Create ${playercount}-player game`}
           </button>
 
-          {errormsg ? <div>{errormsg}</div> : ''}
+          {game.errorMessage ? <div>{game.errorMessage}</div> : ''}
 
           <button
             className="frontbutton"
@@ -237,7 +226,7 @@ export default function FrontPage({
             Find game
           </button>
 
-          {errormsg ? <div>{errormsg}</div> : ''}
+          {game.errorMessage ? <div>{game.errorMessage}</div> : ''}
           <button
             className="frontbutton"
             onClick={() =>
@@ -300,7 +289,7 @@ export default function FrontPage({
           >
             Join Game
           </button>
-          {errormsg ? <div>{errormsg}</div> : ''}
+          {game.errorMessage ? <div>{game.errorMessage}</div> : ''}
         </div>
       </div>
     );
