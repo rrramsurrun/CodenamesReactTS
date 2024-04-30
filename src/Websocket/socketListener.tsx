@@ -7,17 +7,13 @@ import {
   ResetGameData,
   UpdateGameData,
 } from './messageTypes';
+import { useGameContext } from '../contextProvider';
 
-export function AddSocketListeners(
+export function AddSocketOnMessage(
   socket: SocketSender,
-  setGame: React.Dispatch<GameReducerAction>,
-  setMysocket: (s: SocketSender | undefined) => void
+  setGame: React.Dispatch<GameReducerAction>
 ) {
-  socket.onclose = function () {
-    setMysocket(undefined);
-  };
-
-  socket.onmessage = (event) => {
+  socket.nestedSocket.onmessage = (event) => {
     const response = JSON.parse(event.data);
     // console.log('Received');
     // console.log(response);
@@ -68,7 +64,4 @@ export function AddSocketListeners(
   };
 }
 
-export function RemoveSocketListeners(socket: SocketSender) {
-  socket.removeEventListener('message', () => {});
-  socket.removeEventListener('close', () => {});
-}
+export function RemoveSocketListeners(socket: SocketSender) {}

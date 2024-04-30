@@ -1,3 +1,6 @@
+import { GameReducerAction } from './gameReducer';
+import { AddSocketOnMessage } from './socketListener';
+
 type newGameArgs = {
   role: string;
   nickname: string;
@@ -18,25 +21,50 @@ type decorativeEmitArgs =
   | clickWordArgs
   | emptyArgs;
 
-export default class SocketSender extends WebSocket {
+export default class SocketSender {
   userId: string;
   stack: string[] = [];
+  url: string = import.meta.env.PROD
+    ? 'wss://ramsurrun-portfolio.com/codenames'
+    : 'wss://localhost:8001/codenames';
+  nestedSocket = new WebSocket(this.url);
+  setGame: React.Dispatch<GameReducerAction>;
 
-  constructor(url: string) {
-    super(url);
+  constructor(setGame: React.Dispatch<GameReducerAction>) {
     this.userId = '';
-    const socket = this;
-    this.onopen = () => {
-      socket.pollForOutgoingMessages();
+    this.setGame = setGame;
+    this.addSocketListeners();
+  }
+
+  reopenSocket() {
+    const socketSender = this;
+    setTimeout(() => {
+      socketSender.nestedSocket = new WebSocket(socketSender.url);
+      if (socketSender.nestedSocket !== undefined) {
+        socketSender.addSocketListeners();
+      } else {
+        socketSender.reopenSocket();
+      }
+    }, 5);
+  }
+
+  addSocketListeners() {
+    const socketSender = this;
+    this.nestedSocket.onopen = () => {
+      AddSocketOnMessage(socketSender, this.setGame);
+      socketSender.pollForOutgoingMessages();
+    };
+    this.nestedSocket.onclose = () => {
+      socketSender.reopenSocket();
     };
   }
 
   pollForOutgoingMessages() {
     //Work through stack and send all queued messages.
-    while (this.readyState === 1 && this.stack.length > 0) {
+    while (this.nestedSocket.readyState === 1 && this.stack.length > 0) {
       let error = false;
       try {
-        this.send(this.stack[0]);
+        this.nestedSocket.send(this.stack[0]);
       } catch {
         error = true;
       }
