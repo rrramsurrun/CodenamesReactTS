@@ -7,7 +7,6 @@ import {
   ResetGameData,
   UpdateGameData,
 } from './messageTypes';
-import { useGameContext } from '../contextProvider';
 
 export function AddSocketOnMessage(
   socket: SocketSender,
@@ -63,5 +62,3 @@ export function AddSocketOnMessage(
     }
   };
 }
-
-export function RemoveSocketListeners(socket: SocketSender) {}

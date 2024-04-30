@@ -12,8 +12,8 @@ import SocketSender from './Websocket/socketSender';
 type gameDataContext = {
   game: Game;
   setGame: React.Dispatch<GameReducerAction>;
-  mysocket: SocketSender | undefined;
-  setMysocket: React.Dispatch<React.SetStateAction<SocketSender | undefined>>;
+  mysocket: SocketSender;
+  setMysocket: React.Dispatch<React.SetStateAction<SocketSender>>;
 };
 
 const GameContext = createContext<gameDataContext | null>(null);
@@ -23,7 +23,9 @@ export function GameContextProvider({ children }: { children: ReactNode }) {
     gameReducer,
     new Game()
   );
-  const [mysocket, setMysocket] = useState<SocketSender | undefined>(undefined);
+  const [mysocket, setMysocket] = useState<SocketSender>(
+    new SocketSender(setGameFromReduxer)
+  );
   const context: gameDataContext = {
     game: gameFromReducer,
     setGame: setGameFromReduxer,

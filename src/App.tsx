@@ -1,8 +1,5 @@
 import './App.css';
-
 import { useEffect } from 'react';
-import SocketSender from './Websocket/socketSender';
-import { RemoveSocketListeners } from './Websocket/socketListener';
 import FrontPage from './Pages/frontpage';
 // import Codenames from './codeNames';
 import _ from 'lodash';
@@ -10,9 +7,6 @@ import { GameStatus } from './Classes/game';
 
 import CodeNames from './Pages/codenames';
 import { useGameContext } from './contextProvider';
-const socketUrl = import.meta.env.PROD
-  ? 'wss://ramsurrun-portfolio.com/codenames'
-  : 'wss://localhost:8001/codenames';
 
 function App(args: { gameId: string }) {
   const { game, mysocket } = useGameContext();
