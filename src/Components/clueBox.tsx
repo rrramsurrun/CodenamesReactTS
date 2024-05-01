@@ -1,33 +1,78 @@
 import { useState } from 'react';
-import { Select, MenuItem, Box } from '@mui/material';
-import { useGameContext } from '../contextProvider';
+import { Select, MenuItem } from '@mui/material';
+import { useGameContext } from '../Contexts/gameProvider';
+import Game from '../Classes/game';
+import SocketSender from '../Websocket/socketSender';
+import { resetGameButton } from './resetButton';
 
-function winBox() {
+export function clueBox() {
   const { game, mysocket } = useGameContext();
-  if (game.playerCount === 4) {
-    return (
-      <div className={`winbox winbox-${game.win}`}>{`${
-        game.win.charAt(0).toUpperCase() + game.win.slice(1)
-      } Team Wins!`}</div>
-    );
-  }
-  if (game.win === 'win') {
-    return <div className={`winbox`}>{`You Both Win!`}</div>;
-  }
-  if (game.win === 'lose') {
-    return <div className={`winbox`}>{`You Both Lose!`}</div>;
-  }
-}
-function clueInputBox() {
   const [clue, setclue] = useState('');
   const [clueCount, setclueCount] = useState(0);
-  const { game, mysocket } = useGameContext();
+  if (mysocket === undefined) {
+    return null;
+  }
   const sendClue = () => {
-    mysocket?.sendClue(clue, clueCount);
+    mysocket.sendClue(clue, clueCount);
     setclue('');
     setclueCount(0);
   };
 
+  //If game win condition then present winbox
+  if (game.win !== '') {
+    return winBox(game.playerCount, game.win);
+  }
+
+  const secondGuesserRole = game.playerCount === 2 ? 1 : 2;
+  //If turn is 0 or 2 it is a clue-givers turn
+  switch (game.turn) {
+    case 0:
+      if (game.role === 0)
+        return clueInputBox(clue, setclue, clueCount, setclueCount, sendClue);
+      return waitBox(game, 0);
+    case 1:
+      return lastClueBox(game, mysocket);
+    case 2:
+      if (game.role === secondGuesserRole)
+        return clueInputBox(clue, setclue, clueCount, setclueCount, sendClue);
+      return waitBox(game, secondGuesserRole);
+    case 3:
+      return lastClueBox(game, mysocket);
+  }
+}
+
+function winBox(playerCount: number, win: string) {
+  if (playerCount === 4) {
+    return (
+      <div className={`winbox winbox-${win}`}>{`${
+        win.charAt(0).toUpperCase() + win.slice(1)
+      } Team Wins!`}</div>
+    );
+  }
+  if (win === 'win') {
+    return (
+      <div className="winbox">
+        <div className="winbox-text">{`You Both Win!`}</div>;{resetGameButton()}
+      </div>
+    );
+  }
+  if (win === 'lose') {
+    return (
+      <div className="winbox">
+        <div className="winbox-text">{`You Both Lose!`}</div>
+        {resetGameButton(true)}
+      </div>
+    );
+  }
+}
+
+function clueInputBox(
+  clue: string,
+  setclue: React.Dispatch<React.SetStateAction<string>>,
+  clueCount: number,
+  setclueCount: React.Dispatch<React.SetStateAction<number>>,
+  sendClue: () => void
+) {
   return (
     <div className="clueInput">
       <div className="clueInputSpacer">Your one word clue:</div>
@@ -63,8 +108,7 @@ function clueInputBox() {
   );
 }
 
-function lastClueBox() {
-  const { game, mysocket } = useGameContext();
+function lastClueBox(game: Game, mysocket: SocketSender) {
   if (game.clues.length > 0) {
     const lastClue = game.clues[game.clues.length - 1];
     const yourturn =
@@ -74,13 +118,13 @@ function lastClueBox() {
     return (
       <div className="lastcluebox">
         {game.turn - 1 === 0
-          ? playerCardPlain(lastClue.clueGiverIndex, 'red')
-          : playerCardPlain(lastClue.clueGiverIndex, 'blue')}
+          ? playerCardPlain(game, lastClue.clueGiverIndex, 'red')
+          : playerCardPlain(game, lastClue.clueGiverIndex, 'blue')}
         <div>gave the clue</div>
         <div className="guess guess--last">{lastClue.clueWord}</div>
         <div>{`to reveal ${lastClue.clueWordCount} words`}</div>
         {yourturn ? (
-          <button className="endturnbox" onClick={() => mysocket?.endTurn()}>
+          <button className="endturnbox" onClick={() => mysocket.endTurn()}>
             End Turn
           </button>
         ) : (
@@ -91,12 +135,15 @@ function lastClueBox() {
   }
 }
 
-function waitBox() {
-  const { game, mysocket } = useGameContext();
+function waitBox(game: Game, clueGiverIndex: number) {
+  const textPrompt =
+    game.nicknames[clueGiverIndex] !== ''
+      ? 'Waiting for a clue from '
+      : 'Awaiting player';
   if (game.playerCount === 4) {
     return (
-      <div className="waitbox">{`Waiting for a clue from ${
-        game.nicknames[game.turn] && game.turn === 0
+      <div className="waitbox">{`${textPrompt}${
+        game.nicknames[clueGiverIndex] && game.turn === 0
           ? 'Red Spymaster'
           : 'Blue Spymaster'
       }`}</div>
@@ -104,36 +151,12 @@ function waitBox() {
   }
   if (game.playerCount === 2) {
     return (
-      <div className="waitbox">{`Waiting for a clue from ${
-        game.nicknames[game.turn]
-      }`}</div>
+      <div className="waitbox">{`${textPrompt}${game.nicknames[clueGiverIndex]}`}</div>
     );
   }
 }
 
-export function clueBox() {
-  const { game, mysocket } = useGameContext();
-
-  //If game win condition then present winbox
-  if (game.win !== '') {
-    return winBox();
-  }
-  //If turn is 0 or 2 it is time for a clue
-  if (game.turn % 2 === 0) {
-    if (game.role % 2 === 0 && game.turn === game.role) {
-      return clueInputBox();
-    } else {
-      return waitBox();
-    }
-  }
-  //If turn is 1 or 3 it is guess time (for thee)
-  if (game.turn % 2 !== 0) {
-    return lastClueBox();
-  }
-}
-
-function playerCardPlain(i: number, colour: string) {
-  const { game, mysocket } = useGameContext();
+function playerCardPlain(game: Game, i: number, colour: string) {
   if (game.playerCount === 2) {
     colour = 'green';
   }

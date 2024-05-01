@@ -7,7 +7,8 @@ import {
   TableHead,
   Box,
 } from '@mui/material';
-import { useGameContext } from '../contextProvider';
+import { useGameContext } from '../Contexts/gameProvider';
+import Game from '../Classes/game';
 
 export function cluesHistory() {
   const { game } = useGameContext();
@@ -43,7 +44,7 @@ export function cluesHistory() {
                     // }}
                   >
                     <TableCell align="left">
-                      {clueGiver(oldclue.clueGiverIndex)}
+                      {clueGiver(game, oldclue.clueGiverIndex)}
                     </TableCell>
                     <TableCell align="left">
                       <Box className="guess guess--last">
@@ -55,6 +56,7 @@ export function cluesHistory() {
                     </TableCell>
                     <TableCell align="left">
                       {cluesHistoryBox(
+                        game,
                         oldclue.clueGiverIndex,
                         oldclue.clueGuesses
                       )}
@@ -68,7 +70,11 @@ export function cluesHistory() {
   );
 }
 
-function cluesHistoryBox(clueGiverIndex: number, clueguesses: string[]) {
+function cluesHistoryBox(
+  game: Game,
+  clueGiverIndex: number,
+  clueguesses: string[]
+) {
   return (
     <Box
       className="guesses"
@@ -81,7 +87,7 @@ function cluesHistoryBox(clueGiverIndex: number, clueguesses: string[]) {
       {clueguesses.map((i, index) => (
         <Box
           key={`oldclue-box-${index}`}
-          className={`guess guess--${findCluesColor(clueGiverIndex, i)}`}
+          className={`guess guess--${findCluesColor(game, clueGiverIndex, i)}`}
         >
           {i}
         </Box>
@@ -90,8 +96,7 @@ function cluesHistoryBox(clueGiverIndex: number, clueguesses: string[]) {
   );
 }
 
-function findCluesColor(clueGiver: number, word: string) {
-  const { game } = useGameContext();
+function findCluesColor(game: Game, clueGiver: number, word: string) {
   const i = game.words.indexOf(word);
   if (game.playerCount === 4) {
     return game.revealed[i];
@@ -102,8 +107,7 @@ function findCluesColor(clueGiver: number, word: string) {
     }
   }
 }
-function clueGiver(userPos: number) {
-  const { game } = useGameContext();
+function clueGiver(game: Game, userPos: number) {
   let color = 'green';
   if (game.playerCount === 4) {
     color = userPos === 0 ? 'red' : 'blue';

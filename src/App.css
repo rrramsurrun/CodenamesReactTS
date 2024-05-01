@@ -219,6 +219,9 @@
     margin-left: 2em;
     text-align: center;
   }
+  .resetgamebutton-inline {
+    margin-top: 0em;
+  }
   .headerbox {
     display: flex;
     flex-direction: row;
@@ -243,6 +246,10 @@
     flex-grow: 1;
     margin-top: 0.5em;
     text-align: center;
+  }
+  .resetgamebutton-inline {
+    margin-top: 0em;
+    margin-left: 1em;
   }
   .headerbox {
     display: flex;
@@ -329,7 +336,11 @@
 .winbox {
   display: flex;
   justify-content: center;
+  text-align: center;
   font-size: 3em;
+}
+.winbox-text {
+  font-size: 1em;
 }
 .winbox-red {
   color: #c41e3a;
@@ -446,7 +457,7 @@
   color: black;
 }
 .wordcard--cream {
-  background-color: rgb(202, 189, 112);
+  background-color: #f8de7e;
 }
 .wordcard--light-cream {
   background-color: rgb(247, 238, 192);

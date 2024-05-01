@@ -24,7 +24,7 @@ export function AddSocketOnMessage(
       console.log('Incoming websocket message was not in the correct format');
       return;
     }
-    console.log(response);
+    // console.log(response);
     const responseBody = response.body;
     switch (response.responseType) {
       case 'updateGame':
@@ -47,13 +47,11 @@ export function AddSocketOnMessage(
       case 'leaveGame':
         const dataLeave = responseBody as LeaveGameData;
         setGame({ type: 'LEAVE_GAME', payload: dataLeave });
-        //TODO A function to clear the url
-        //window.location.href = '/';
         break;
       case 'FindGameError':
         localStorage.removeItem('codenamesUserId');
         localStorage.removeItem('codenamesGameId');
-        console.log(responseBody);
+        // console.log(responseBody);
         break;
       default:
         console.log('No methods available for this websocket message:');

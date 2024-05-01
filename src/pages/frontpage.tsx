@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { GameStatus } from '../Classes/game';
-import { useGameContext } from '../contextProvider';
+import { useGameContext } from '../Contexts/gameProvider';
 
 export default function FrontPage() {
   const { game, setGame, mysocket } = useGameContext();
   const [status, setStatus] = useState(game.gameStatus);
-  const [room, setroom] = useState('');
+  const [searchId, setSearchId] = useState('');
   const [tempnickname, settempnickname] = useState('');
   const [temprole, settemprole] = useState('');
   const [playercount, setplayercount] = useState(4);
@@ -13,21 +13,37 @@ export default function FrontPage() {
     setStatus(game.gameStatus);
   }, [game]);
 
+  function findOpenGameRole(nicknames: string[]) {
+    if (nicknames[0] === '') return 'GREEN LEFT';
+    return 'GREEN RIGHT';
+  }
   const submitRequest = () => {
     if (mysocket !== undefined) {
       switch (status) {
         case GameStatus.FRONTPAGE_NEW:
-          mysocket.newGame(temprole, tempnickname, playercount);
+          if (playercount === 2) {
+            mysocket.newGame('GREEN LEFT', tempnickname, playercount);
+          } else {
+            mysocket.newGame(temprole, tempnickname, playercount);
+          }
           break;
         case GameStatus.FRONTPAGE_FIND:
-          const cleanedRoom = room.includes('roomname=')
-            ? room.slice(room.indexOf('roomname=') + 9)
-            : room;
-          setroom(cleanedRoom);
-          mysocket.findGame(cleanedRoom);
+          const cleanedGameId = searchId.includes('gameId=')
+            ? searchId.slice(searchId.indexOf('gameId=') + 7)
+            : searchId;
+          setSearchId(cleanedGameId);
+          mysocket.findGame(cleanedGameId);
           break;
         case GameStatus.FRONTPAGE_SELECT:
-          mysocket.joinGame(game.gameId, temprole, tempnickname);
+          if (game.playerCount === 2) {
+            mysocket.joinGame(
+              game.gameId,
+              findOpenGameRole(game.nicknames),
+              tempnickname
+            );
+          } else {
+            mysocket.joinGame(game.gameId, temprole, tempnickname);
+          }
           break;
         default:
           console.log('Game Status error');
@@ -63,10 +79,10 @@ export default function FrontPage() {
         return (
           <div className="userroles">
             <div className="select-player-column">
-              {nicknames[0] !== null
+              {nicknames[0] !== '' && nicknames[0] !== null
                 ? selectedPlayer(nicknames[0], 'green', 'Your co-conspirator')
                 : ''}
-              {nicknames[1] !== null
+              {nicknames[1] !== '' && nicknames[1] !== null
                 ? selectedPlayer(nicknames[1], 'green', 'Your co-conspirator')
                 : ''}
             </div>
@@ -157,7 +173,10 @@ export default function FrontPage() {
               className={`frontbutton ${
                 playercount === 4 ? 'frontbutton--red' : ''
               }`}
-              onClick={() => setplayercount(4)}
+              onClick={() => {
+                setplayercount(4);
+                settemprole('');
+              }}
             >
               4-player
             </button>
@@ -165,7 +184,9 @@ export default function FrontPage() {
               className={`frontbutton ${
                 playercount === 2 ? 'frontbutton--green' : ''
               }`}
-              onClick={() => setplayercount(2)}
+              onClick={() => {
+                setplayercount(2);
+              }}
             >
               2-player
             </button>
@@ -213,14 +234,15 @@ export default function FrontPage() {
           <input
             className="nameinput"
             placeholder="Room Name"
-            onChange={(e) => setroom(e.target.value)}
-            key="roomname"
+            onChange={(e) => setSearchId(e.target.value)}
+            key="searchIdname"
+            value={searchId}
           />
 
           <button
             className="frontbutton"
             type="button"
-            disabled={!room}
+            disabled={!searchId}
             onClick={submitRequest}
           >
             Find game

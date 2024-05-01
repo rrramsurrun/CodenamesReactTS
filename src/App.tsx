@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { GameStatus } from './Classes/game';
 
 import CodeNames from './Pages/codenames';
-import { useGameContext } from './contextProvider';
+import { useGameContext } from './Contexts/gameProvider';
 
 function App(args: { gameId: string }) {
   const { game, mysocket } = useGameContext();
@@ -20,13 +20,19 @@ function App(args: { gameId: string }) {
       //check local storage
       const userId = localStorage.getItem('codenamesUserId');
       const gameId = localStorage.getItem('codenamesGameId');
-      if (userId !== null && gameId !== null) {
-        console.log('Rejoining game');
+      if (gameId === args.gameId) {
+        //stored data matches URL, navigate to primary url
+        window.location.href = '/';
+      } else if (userId !== null && gameId !== null) {
+        //used stored data to start new game
         mysocket.rejoinGame(userId, gameId);
-      }
-      //check URL parameters
-      else if (args.gameId !== '') {
-        mysocket.findGame(args.gameId);
+      } else if (gameId !== null) {
+        //used stored data to find game
+        mysocket.findGame(gameId);
+      } else if (args.gameId !== '') {
+        //move URL argument to stored data, navigate to primary url
+        localStorage.setItem('codenamesGameId', args.gameId);
+        window.location.href = '/';
       }
     }
   }, [args]);
@@ -46,26 +52,6 @@ function App(args: { gameId: string }) {
             )}
           </div>
         )}
-        <button
-          className="frontbutton"
-          onClick={() =>
-            console.log(
-              `${localStorage.getItem('codenamesUserId')} and 
-                ${localStorage.getItem('codenamesGameId')}`
-            )
-          }
-        >
-          Check local storage
-        </button>
-        <button className="frontbutton" onClick={() => console.log(game)}>
-          Check game
-        </button>
-        <button
-          className="frontbutton"
-          onClick={() => console.log(mysocket?.userId)}
-        >
-          Check stackuserId
-        </button>
       </div>
     </div>
   );

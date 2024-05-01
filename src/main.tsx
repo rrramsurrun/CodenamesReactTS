@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { GameContextProvider } from './contextProvider.tsx';
+import { GameContextProvider } from './Contexts/gameProvider.tsx';
 
 const params = new URLSearchParams(window.location.search);
 const gameId = params.get('gameId') || '';

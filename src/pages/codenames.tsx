@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Select, MenuItem, Box } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { IconCopy } from '@tabler/icons-react';
-import { useGameContext } from '../contextProvider';
-import {
-  playersBox,
-  playerCard,
-  cluecountCard,
-} from '../Components/playerCards';
+import { useGameContext } from '../Contexts/gameProvider';
+import { playersBox } from '../Components/playerCards';
 import { wordCard } from '../Components/wordCard';
 import { cluesHistory } from '../Components/clueHistoryBox';
 import { resetGameButton } from '../Components/resetButton';
@@ -15,8 +10,6 @@ import { clueBox } from '../Components/clueBox';
 
 export default function CodeNames() {
   const { game, mysocket } = useGameContext();
-  const [clue, setclue] = useState('');
-  const [clueCount, setclueCount] = useState(0);
   const [clipboardNote, setclipboardNote] = useState(false);
   const [narrowScreen, setnarrowScreen] = useState(false);
 
@@ -64,10 +57,10 @@ export default function CodeNames() {
   function centralBoard() {
     return (
       <div className="cards">
-        {[...Array(5).keys()].map((e) => (
+        {[0, 1, 2, 3, 4].map((e) => (
           <div key={`wordrow ${e}`} className="wordsrow">
             {[...Array(5).keys()].map((ee) =>
-              wordCard((e + 1) * 5 - (5 + -ee))
+              wordCard(game, mysocket, (e + 1) * 5 - (5 + -ee))
             )}
           </div>
         ))}
@@ -83,7 +76,7 @@ export default function CodeNames() {
       <div>
         <div className="headerbox">
           {copyURLToClipboard()}
-          {game.role < 2 ? resetGameButton() : null}
+          {resetGameButton()}
         </div>
         <div className="gamescreen">
           <div className="players-box">

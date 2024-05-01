@@ -83,8 +83,8 @@ export default class SocketSender {
         args[key] = String(args[key]);
       }
     });
-    console.log(`Sending message`);
-    console.log(JSON.stringify({ RequestType: requestType, Body: args }));
+    // console.log(`Sending message`);
+    // console.log(JSON.stringify({ RequestType: requestType, Body: args }));
     const stackMsg = JSON.stringify({ RequestType: requestType, Body: args });
     //Add to stack if it isn't the same as the first message
     if (this.stack[this.stack.length - 1] !== stackMsg) {

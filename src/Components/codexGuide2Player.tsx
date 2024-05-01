@@ -55,7 +55,7 @@ export function codexClueBox() {
           .map((x, index) => (
             <Box
               key={`codex-guide-middle-cellbox-${index}`}
-              className={`codex-guide__cell codex-guide__cell--middle`}
+              className={`codex-guide__cell codex-guide__cell--middle ${x}`}
             >
               &#x2195;
             </Box>

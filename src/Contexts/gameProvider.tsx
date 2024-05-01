@@ -5,9 +5,9 @@ import React, {
   useReducer,
   useState,
 } from 'react';
-import gameReducer, { GameReducerAction } from './Websocket/gameReducer';
-import Game from './Classes/game';
-import SocketSender from './Websocket/socketSender';
+import gameReducer, { GameReducerAction } from '../Websocket/gameReducer';
+import Game from '../Classes/game';
+import SocketSender from '../Websocket/socketSender';
 
 type gameDataContext = {
   game: Game;
