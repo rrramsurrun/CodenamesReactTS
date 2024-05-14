@@ -36,10 +36,8 @@ export default function CodeNames() {
   }, [clipboardNote]);
 
   const clipboardFunction = () => {
-    const URL = import.meta.env.PROD
-      ? 'https://ramsurrun-portfolio.com/codenames/?gameId='
-      : 'http://localhost:5173/codenames/?gameId=';
-    navigator.clipboard.writeText(`${URL}${game.gameId}`);
+    const URL = `${window.location.href}?gameId=${game.gameId}`;
+    navigator.clipboard.writeText(URL);
     setclipboardNote(true);
   };
 

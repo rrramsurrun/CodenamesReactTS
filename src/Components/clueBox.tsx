@@ -137,7 +137,8 @@ function lastClueBox(game: Game, mysocket: SocketSender) {
 
 function waitBox(game: Game, clueGiverIndex: number) {
   const textPrompt =
-    game.nicknames[clueGiverIndex] !== ''
+    game.nicknames[clueGiverIndex] === '' ||
+    game.nicknames[clueGiverIndex] === null
       ? 'Waiting for a clue from '
       : 'Awaiting player';
   if (game.playerCount === 4) {

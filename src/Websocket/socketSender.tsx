@@ -24,9 +24,10 @@ type decorativeEmitArgs =
 export default class SocketSender {
   userId: string;
   stack: string[] = [];
-  url: string = import.meta.env.PROD
-    ? 'wss://ramsurrun-portfolio.com/codenames'
-    : 'wss://localhost:8001/codenames';
+  url: string = 'wss://ramsurrun-portfolio.com/codenamesSocket';
+  // import.meta.env.PROD
+  //   ? 'wss://ramsurrun-portfolio.com/codenames'
+  //   : 'wss://localhost:8001/codenames';
   nestedSocket = new WebSocket(this.url);
   setGame: React.Dispatch<GameReducerAction>;
 
@@ -149,5 +150,8 @@ export default class SocketSender {
   }
   endTurn() {
     this.decorativeEmit('endTurn', { userId: this.userId });
+  }
+  closeSocket() {
+    this.nestedSocket.close();
   }
 }

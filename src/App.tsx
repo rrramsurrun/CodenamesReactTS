@@ -10,9 +10,12 @@ import { useGameContext } from './Contexts/gameProvider';
 
 function App(args: { gameId: string }) {
   const { game, mysocket } = useGameContext();
-  // const [game, setGame] = useReducer(gameReducer, new Game());
-  // const [mysocket, setMysocket] = useState<SocketSender | undefined>(undefined);
 
+  useEffect(() => {
+    return () => {
+      mysocket.closeSocket();
+    };
+  }, []);
   useEffect(() => {
     //Runs on first render and when socket is reopened
     //If socket is open and game is null, check for stored game data or URL data
@@ -22,7 +25,7 @@ function App(args: { gameId: string }) {
       const gameId = localStorage.getItem('codenamesGameId');
       if (gameId === args.gameId) {
         //stored data matches URL, navigate to primary url
-        window.location.href = '/';
+        window.location.href = '/codenames/codenames.html';
       } else if (userId !== null && gameId !== null) {
         //used stored data to start new game
         mysocket.rejoinGame(userId, gameId);
@@ -32,7 +35,7 @@ function App(args: { gameId: string }) {
       } else if (args.gameId !== '') {
         //move URL argument to stored data, navigate to primary url
         localStorage.setItem('codenamesGameId', args.gameId);
-        window.location.href = '/';
+        window.location.href = '/codenames/codenames.html';
       }
     }
   }, [args]);

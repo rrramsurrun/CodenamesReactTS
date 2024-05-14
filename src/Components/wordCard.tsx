@@ -28,7 +28,6 @@ function twoPlayerWordCard(
   let codexcolor = '';
   let leftcolor = '';
   let rightcolor = '';
-  let finalcolor = '';
 
   //Set default clickable if it is the player's turn to guess
   if (game.role === 0) {
@@ -55,7 +54,6 @@ function twoPlayerWordCard(
 
   switch (`${leftcolor}-${rightcolor}`) {
     case 'green-green':
-      finalcolor = 'green';
       clickable = false;
       revealedToggle = 'revealed';
       return singleColorCard(
@@ -65,7 +63,7 @@ function twoPlayerWordCard(
         word,
         false,
         'green',
-        'revealed'
+        revealedToggle
       );
     case 'cream-':
       //

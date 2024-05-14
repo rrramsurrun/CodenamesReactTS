@@ -76,7 +76,7 @@ export default function gameReducer(
     if (action.payload.userId === state.userId) {
       localStorage.removeItem('codenamesUserId');
       localStorage.removeItem('codenamesGameId');
-      window.location.href = '/';
+      window.location.href = '/codenames/codenames.html';
       return new Game();
     }
     state.setErrorMessage(
